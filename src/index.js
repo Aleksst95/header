@@ -171,9 +171,107 @@ class Header {
        * Add an event Listener to input field
        */
       anchorInput.addEventListener('input', (event) => {
+
+        let value = event.target.value,
+          cyrToLatCharacters = {
+            1025: 'E',
+            1040: 'a',
+            1041: 'B',
+            1042: 'V',
+            1043: 'G',
+            1044: 'D',
+            1045: 'E',
+            1046: 'Zh',
+            1047: 'Z',
+            1048: 'I',
+            1049: 'Y',
+            1050: 'K',
+            1051: 'L',
+            1052: 'M',
+            1053: 'N',
+            1054: 'O',
+            1055: 'P',
+            1056: 'R',
+            1057: 'S',
+            1058: 'T',
+            1059: 'U',
+            1060: 'F',
+            1061: 'H',
+            1062: 'Tc',
+            1063: 'Ch',
+            1064: 'Sh',
+            1065: 'Sch',
+            1067: 'I',
+            1069: 'E',
+            1070: 'Yu',
+            1071: 'Ya',
+            1072: 'a',
+            1073: 'b',
+            1074: 'v',
+            1075: 'g',
+            1076: 'd',
+            1077: 'e',
+            1078: 'zh',
+            1079: 'z',
+            1080: 'i',
+            1081: 'y',
+            1082: 'k',
+            1083: 'l',
+            1084: 'm',
+            1085: 'n',
+            1086: 'o',
+            1087: 'p',
+            1088: 'r',
+            1089: 's',
+            1090: 't',
+            1091: 'u',
+            1092: 'f',
+            1093: 'h',
+            1094: 'tc',
+            1095: 'ch',
+            1096: 'sh',
+            1097: 'sch',
+            1099: 'i',
+            1101: 'e',
+            1102: 'yu',
+            1103: 'ya',
+            1105: 'e',
+          },
+          valueLength = 0;
+
+        // replace all Cyrillic characters to Latin
+        valueLength = value.length;
+
+        let characterIndex = 0;
+        while (characterIndex < valueLength) {
+          if (value.charCodeAt(characterIndex) in cyrToLatCharacters) {
+            /**
+             * Save the character code before changing the 'value'
+             */
+            let characterCharCode = value.charCodeAt(characterIndex);
+
+            value = value.substr(0, characterIndex) +
+              cyrToLatCharacters[value.charCodeAt(characterIndex)] +
+              value.substr(characterIndex + 1);
+
+            /**
+             * Increase 'valueLength' and 'characterIndex' to the correct value
+             * if the transliterated value has more than 1 character.
+             */
+            let characterLength = cyrToLatCharacters[characterCharCode].length;
+            if (characterLength > 1) {
+              characterIndex += (characterLength - 1);
+              valueLength += (characterLength - 1);
+            }
+          }
+
+          characterIndex += 1;
+        }
+
         // Allow only the following characters
-        let value = event.target.value.replace(/[^a-z0-9_-]/gi, ''),
-          valueLength = value.length;
+        value = value.replace(/[^a-z0-9_-]/gi, '');
+
+        valueLength = value.length;
 
         // limit the length of the anchor
         if (valueLength > this._settings.anchorLength) {
@@ -194,7 +292,8 @@ class Header {
             this._element.classList.remove(this._CSS.blockAfterHide);
           }
         } else {
-          if (this._element.classList.contains(this._CSS.blockAfterHide) === false) {
+          if (this._element.classList.contains(this._CSS.blockAfterHide) ===
+            false) {
             this._element.classList.add(this._CSS.blockAfterHide);
           }
         }
