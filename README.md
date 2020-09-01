@@ -46,7 +46,7 @@ var editor = EditorJS({
 });
 ```
 Available characters: all Latin letters, digitals, dash, and underscore. Also, Cyrillic characters are replaced
-by Latin letters, for example, `щ` are replaced by `sch`.  
+by Latin letters, for example, `щ` to `sch`.  
 
 P.S. The anchor value is displayed next to the header block only when there is text in the header block.
 
