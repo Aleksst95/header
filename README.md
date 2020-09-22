@@ -45,7 +45,10 @@ var editor = EditorJS({
   ...
 });
 ```
-Available symbols: all Latin letters, digitals, dash, and underscore.
+Available symbols: all Latin letters, digitals, dash, and underscore. Also, Cyrillic characters are replaced
+by Latin letters, for example, `щ` to `sch`. 
+
+If you want to set the maximum length of the header text, you need to set the `checkHeaderLength` parameter to `TRUE` in the config.
 
 P.S. The anchor value is displayed next to the header block only when there is text in the header block.
 
@@ -73,13 +76,16 @@ var editor = EditorJS({
 
 All properties are optional.
 
-| Field        | Type       | Description                      |
-| ------------ | ---------- | -------------------------------- |
-| placeholder  | `string`   | header's placeholder string      |
-| levels       | `number[]` | enabled heading levels           |
-| defaultLevel | `number`   | default heading level            |
-| allowAnchor  | `boolean`  | Anchor enabling (default: `true`) |
-| anchorLength  | `number`  | Anchor length (default: `50`)     |
+
+| Field             | Type       | Description                                 |
+| ----------------- | ---------- | ------------------------------------------- |
+| placeholder       | `string`   | header's placeholder string                 |
+| levels            | `number[]` | enabled heading levels                      |
+| defaultLevel      | `number`   | default heading level                       |
+| checkHeaderLength | `boolean`  | Enable header text length check             |
+| headerLength      | `number`   | Maximum header text length (default: `100`) |
+| allowAnchor       | `boolean`  | Anchor enabling (default: `true`)           |
+| anchorLength      | `number`   | Anchor length (default: `50`)               |
 
 ```javascript
 var editor = EditorJS({
