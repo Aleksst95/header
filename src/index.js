@@ -523,9 +523,171 @@ class Header {
    * @param {object} classThis
 	 */
   eventListerSanitazerForAnchor(event, classThis) {
+		let value = event.target.value,
+			cyrToLatCharacters = {
+				'\\u401': 'E',
+				'\\u419': 'Y',
+				'\\u426': 'Tc',
+				'\\u423': 'U',
+				'\\u41A': 'K',
+				'\\u415': 'E',
+				'\\u41D': 'N',
+				'\\u413': 'G',
+				'\\u428': 'Sh',
+				'\\u429': 'Sch',
+				'\\u417': 'Z',
+				'\\u425': 'H',
+				'\\u451': 'e',
+				'\\u439': 'y',
+				'\\u446': 'tc',
+				'\\u443': 'u',
+				'\\u43A': 'k',
+				'\\u435': 'e',
+				'\\u43D': 'n',
+				'\\u433': 'g',
+				'\\u448': 'sh',
+				'\\u449': 'sch',
+				'\\u437': 'z',
+				'\\u445': 'h',
+				'\\u424': 'F',
+				'\\u42B': 'I',
+				'\\u412': 'V',
+				'\\u410': 'a',
+				'\\u41F': 'P',
+				'\\u420': 'R',
+				'\\u41E': 'O',
+				'\\u41B': 'L',
+				'\\u414': 'D',
+				'\\u416': 'Zh',
+				'\\u42D': 'E',
+				'\\u444': 'f',
+				'\\u44B': 'i',
+				'\\u432': 'v',
+				'\\u430': 'a',
+				'\\u43F': 'p',
+				'\\u440': 'r',
+				'\\u43E': 'o',
+				'\\u43B': 'l',
+				'\\u434': 'd',
+				'\\u436': 'zh',
+				'\\u44D': 'e',
+				'\\u42F': 'Ya',
+				'\\u427': 'Ch',
+				'\\u421': 'S',
+				'\\u41C': 'M',
+				'\\u418': 'I',
+				'\\u422': 'T',
+				'\\u411': 'B',
+				'\\u42E': 'Yu',
+				'\\u44F': 'ya',
+				'\\u447': 'ch',
+				'\\u441': 's',
+				'\\u43C': 'm',
+				'\\u438': 'i',
+				'\\u442': 't',
+				'\\u431': 'b',
+				'\\u44E': 'yu',
+			},
+			valueLength = 0;
+
+		/**
+		 *  The unicode character values in 'cyrToLatCharacters' have the following order:
+		 {
+				'Ё': 'E',
+				'Й': 'Y',
+				'Ц': 'Tc',
+				'У': 'U',
+				'К': 'K',
+				'Е': 'E',
+				'Н': 'N',
+				'Г': 'G',
+				'Ш': 'Sh',
+				'Щ': 'Sch',
+				'З': 'Z',
+				'Х': 'H',
+				'ё': 'e',
+				'й': 'y',
+				'ц': 'tc',
+				'у': 'u',
+				'к': 'k',
+				'е': 'e',
+				'н': 'n',
+				'г': 'g',
+				'ш': 'sh',
+				'щ': 'sch',
+				'з': 'z',
+				'х': 'h',
+				'Ф': 'F',
+				'Ы': 'I',
+				'В': 'V',
+				'А': 'a',
+				'П': 'P',
+				'Р': 'R',
+				'О': 'O',
+				'Л': 'L',
+				'Д': 'D',
+				'Ж': 'Zh',
+				'Э': 'E',
+				'ф': 'f',
+				'ы': 'i',
+				'в': 'v',
+				'а': 'a',
+				'п': 'p',
+				'р': 'r',
+				'о': 'o',
+				'л': 'l',
+				'д': 'd',
+				'ж': 'zh',
+				'э': 'e',
+				'Я': 'Ya',
+				'Ч': 'Ch',
+				'С': 'S',
+				'М': 'M',
+				'И': 'I',
+				'Т': 'T',
+				'Б': 'B',
+				'Ю': 'Yu',
+				'я': 'ya',
+				'ч': 'ch',
+				'с': 's',
+				'м': 'm',
+				'и': 'i',
+				'т': 't',
+				'б': 'b',
+				'ю': 'yu',
+			};
+		 */
+
+		valueLength = value.length;
+
+		// replace all Cyrillic characters to Latin
+		let characterIndex = 0;
+		while (characterIndex < valueLength) {
+			let valueCharToUnicode = '\\u' +
+				value[characterIndex].charCodeAt(0).toString(16).toUpperCase(); // Get the unicode string of the character
+			if (valueCharToUnicode in cyrToLatCharacters) {
+				value = value.substr(0, characterIndex) +
+					cyrToLatCharacters[valueCharToUnicode] +
+					value.substr(characterIndex + 1);
+
+				/**
+				 * Increase 'valueLength' and 'characterIndex' to the correct value
+				 * if the transliterated value has more than 1 character.
+				 */
+				let characterLength = cyrToLatCharacters[valueCharToUnicode].length;
+				if (characterLength > 1) {
+					characterIndex += (characterLength - 1);
+					valueLength += (characterLength - 1);
+				}
+			}
+
+			characterIndex += 1;
+		}
+
 		// Allow only the following characters
-		let value = event.target.value.replace(/[^a-z0-9_-]/gi, ''),
-			valueLength = value.length;
+		value = value.replace(/[^a-z0-9_-]/gi, '');
+
+		valueLength = value.length;
 
 		// limit the length of the anchor
 		if (valueLength > classThis._settings.anchorLength) {
