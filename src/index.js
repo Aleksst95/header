@@ -621,6 +621,14 @@ class Header {
     if (this._settings.allowAnchor === true) {
       tag.dataset.anchor = this.anchor;
     }
+			
+    /**
+     * Hide pseudo-element ::after to not show an empty anchor's value near with
+     * the header block.
+     */
+    if ('anchor' in this._data && this._data.anchor.length === 0) {
+      tag.classList.add(this._CSS.blockAfterHide);
+    }
 
     return tag;
   }
