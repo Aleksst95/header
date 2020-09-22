@@ -17,6 +17,8 @@ require('./index.css').toString();
  * @property {string} placeholder — Block's placeholder
  * @property {number[]} levels — Heading levels
  * @property {number} defaultLevel — Default level
+ * @property {boolean} checkHeaderLength — Enable header text length check
+ * @property {number} headerLength — Header text length
  * @property {boolean} allowAnchor — Enable anchor block output
  * @property {number} anchorLength — Anchor's length
  */
@@ -62,6 +64,16 @@ class Header {
      */
     this._settings = config;
 
+    this._settings.checkHeaderLength = ('checkHeaderLength' in this._settings) ?
+      !!this._settings.checkHeaderLength :
+      Header.DEFAULT_CHECK_HEADER_LENGTH;
+
+    if (this._settings.checkHeaderLength === true) {
+      this._settings.headerLength = parseInt(this._settings.headerLength) ||
+        Header.DEFAULT_HEADER_LENGTH;
+    }
+
+      
     this._settings.allowAnchor = ('allowAnchor' in this._settings) ?
       !!this._settings.allowAnchor :
       Header.DEFAULT_ENABLE_ANCHOR;
@@ -93,14 +105,6 @@ class Header {
      * @private
      */
     this._element = this.getTag();
-
-    /**
-     * Hide pseudo-element ::after to not show an empty anchor's value near with
-     * the header block.
-     */
-    if ('anchor' in this._data && this._data.anchor.length === 0) {
-      this._element.classList.add(this._CSS.blockAfterHide);
-    }
   }
 
   /**
@@ -116,12 +120,27 @@ class Header {
     if (typeof data !== 'object') {
       data = {};
     }
-
-    newData.text = data.text || '';
+      
+    newData.text = this.normalizeHeader(data.text || '');
     newData.level = parseInt(data.level) || this.defaultLevel.number;
     newData.anchor = this._settings.allowAnchor ? (data.anchor || '') : '';
 
     return newData;
+  }
+    
+  /**
+   * Normalize title text depends on current settings
+   *
+   * @param {string} text - header text
+   * @returns {string}
+   * @private
+   */
+  normalizeHeader(text) {
+    if (this._settings.checkHeaderLength && text.length > this._settings.headerLength) {
+        text = text.substr(0, this._settings.headerLength);
+    }
+      
+    return text;
   }
 
   /**
@@ -159,6 +178,8 @@ class Header {
       anchorInput.classList.add(this._CSS.settingsInput);
       anchorInput.placeholder = 'Anchor';
       anchorInput.value = this.anchor;
+		
+			this._anchorInput = anchorInput;
 
       settingsItemAnchor.appendChild(anchorInput);
 
@@ -170,35 +191,7 @@ class Header {
       /**
        * Add an event Listener to input field
        */
-      anchorInput.addEventListener('input', (event) => {
-        // Allow only the following characters
-        let value = event.target.value.replace(/[^a-z0-9_-]/gi, ''),
-          valueLength = value.length;
-
-        // limit the length of the anchor
-        if (valueLength > this._settings.anchorLength) {
-          value = value.slice(0, this._settings.anchorLength);
-        }
-
-        // put the received value after filters in the input field
-        event.target.value = value;
-
-        // put the value in the tag data
-        this._element.dataset.anchor = value;
-
-        // save the value
-        this.data.anchor = value;
-
-        if (valueLength > 0) {
-          if (this._element.classList.contains(this._CSS.blockAfterHide)) {
-            this._element.classList.remove(this._CSS.blockAfterHide);
-          }
-        } else {
-          if (this._element.classList.contains(this._CSS.blockAfterHide) === false) {
-            this._element.classList.add(this._CSS.blockAfterHide);
-          }
-        }
-      });
+      this.api.listeners.on(this._anchorInput, 'input', (event) => {this.eventListerSanitazerForAnchor(event, this)});
     }
 
     // do not add settings button, when only one level is configured
@@ -279,8 +272,15 @@ class Header {
    * @public
    */
   merge(data) {
+		/**
+		 * When data is merged, this.data.text has a special tag at the end of the text 
+		 * and the last space is replaced with the '&nbsp;'.
+		 * For the correct calculation of the length of the header text, you must remove all unnecessary.
+		 */
+		let oldText = (this.api.sanitizer.clean(this.data.text, {})).replace('&nbsp;', ' ');
+		
     const newData = {
-      text: this.data.text + data.text,
+      text: this.normalizeHeader(oldText + data.text),
       level: this.data.level,
       anchor: this._settings.allowAnchor ? this.data.anchor : '',
     };
@@ -357,6 +357,26 @@ class Header {
   }
 
   /**
+   * Default header length check status
+   *
+   * @public
+   * @returns {Boolean}
+   */
+  static get DEFAULT_CHECK_HEADER_LENGTH() {
+    return false;
+  }
+
+  /**
+   * Default length for header
+   *
+   * @public
+   * @returns {Number}
+   */
+  static get DEFAULT_HEADER_LENGTH() {
+    return 100;
+  }
+
+  /**
    * Get current Tools`s data
    *
    * @returns {HeaderData} Current data
@@ -385,6 +405,10 @@ class Header {
      * then replace it to a new block
      */
     if (data.level !== undefined && this._element.parentNode) {
+			if (this._element) {
+					this.destroyHeaderEventListeners();
+			}
+				
       /**
        * Create a new tag
        *
@@ -409,13 +433,13 @@ class Header {
        * @private
        */
       this._element = newHeader;
-    }
 
-    /**
-     * If data.text was passed then update block's content
-     */
-    if (data.text !== undefined) {
-      this._element.innerHTML = this._data.text || '';
+			/**
+			 * If data.text was passed then update block's content
+			 */
+			if (data.text !== undefined) {
+				this._element.innerHTML = this._data.text || '';
+			}
     }
   }
 
@@ -450,6 +474,14 @@ class Header {
      * Add Placeholder
      */
     tag.dataset.placeholder = this.api.i18n.t(this._settings.placeholder || '');
+   
+		/**
+		 * Add event listeners to listen for changes to the header text if the user has enabled header text length validation.
+		 */
+		if (this._settings.checkHeaderLength) {
+			this.api.listeners.on(tag, 'input', (event) => {this.eventListerSanitazerForHeader(event, this)});
+			this.api.listeners.on(tag, 'paste', (event) => {this.eventListerSanitazerForHeader(event, this)});
+		}
 
     /**
      * Add anchor to if available
@@ -457,8 +489,67 @@ class Header {
     if (this._settings.allowAnchor === true) {
       tag.dataset.anchor = this.anchor;
     }
-
+			
+		/**
+		 * Hide pseudo-element ::after to not show an empty anchor's value near with
+		 * the header block.
+		 */
+		if ('anchor' in this._data && this._data.anchor.length === 0) {
+      tag.classList.add(this._CSS.blockAfterHide);
+    }
+			
     return tag;
+  }
+
+	/**
+	 * Event lister to sanitize the header text based on the current setting.
+	 *
+   * @param {object} event
+   * @param {object} classThis
+	 */
+  eventListerSanitazerForHeader(event, classThis) {
+      let value = event.target.innerHTML;
+          
+			if (value.length > classThis._settings.headerLength) {
+				event.target.innerHTML = classThis.normalizeHeader(value);
+				event.target.blur();					
+			}
+  }
+
+	/**
+	 * Event lister to sanitize the anchor input based on the current setting.
+	 *
+   * @param {object} event
+   * @param {object} classThis
+	 */
+  eventListerSanitazerForAnchor(event, classThis) {
+		// Allow only the following characters
+		let value = event.target.value.replace(/[^a-z0-9_-]/gi, ''),
+			valueLength = value.length;
+
+		// limit the length of the anchor
+		if (valueLength > classThis._settings.anchorLength) {
+			value = value.slice(0, classThis._settings.anchorLength);
+		}
+
+		// put the received value after filters in the input field
+		event.target.value = value;
+
+		// put the value in the tag data
+		classThis._element.dataset.anchor = value;
+
+		// save the value
+		classThis.data.anchor = value;
+
+		if (valueLength > 0) {
+			if (classThis._element.classList.contains(classThis._CSS.blockAfterHide)) {
+				classThis._element.classList.remove(classThis._CSS.blockAfterHide);
+			}
+		} else {
+			if (classThis._element.classList.contains(classThis._CSS.blockAfterHide) === false) {
+				classThis._element.classList.add(classThis._CSS.blockAfterHide);
+			}
+		}
   }
 
   /**
@@ -614,7 +705,7 @@ class Header {
 
     this.data = {
       level,
-      text: content.innerHTML,
+      text: this.normalizeHeader(content.innerHTML),
     };
   }
 
@@ -643,6 +734,16 @@ class Header {
       title: 'Heading',
     };
   }
+	
+	/**
+	 * Disable the event listeners which was enabled to listen changing of the main tag with header text
+	 */
+	destroyHeaderEventListeners() {
+		if (this._settings.checkHeaderLength) {
+			this.api.listeners.off(this._element, 'input', (event) => {this.eventListerSanitazerForHeader(event, this)}, false);
+			this.api.listeners.off(this._element, 'paste', (event) => {this.eventListerSanitazerForHeader(event, this)}, false);
+		}
+	}
 }
 
 module.exports = Header;
