@@ -72,7 +72,6 @@ class Header {
       this._settings.headerLength = parseInt(this._settings.headerLength) ||
         Header.DEFAULT_HEADER_LENGTH;
     }
-
       
     this._settings.allowAnchor = ('allowAnchor' in this._settings) ?
       !!this._settings.allowAnchor :
