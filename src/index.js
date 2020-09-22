@@ -271,12 +271,12 @@ class Header {
    * @public
    */
   merge(data) {
-		/**
-		 * When data is merged, this.data.text has a special tag at the end of the text 
-		 * and the last space is replaced with the '&nbsp;'.
-		 * For the correct calculation of the length of the header text, you must remove all unnecessary.
-		 */
-		let oldText = (this.api.sanitizer.clean(this.data.text, {})).replace('&nbsp;', ' ');
+    /**
+     * When data is merged, this.data.text has a special tag at the end of the text 
+     * and the last space is replaced with the '&nbsp;'.
+     * For the correct calculation of the length of the header text, you must remove all unnecessary.
+     */
+    let oldText = (this.api.sanitizer.clean(this.data.text, {})).replace('&nbsp;', ' ');
 		
     const newData = {
       text: this.normalizeHeader(oldText + data.text),
@@ -404,9 +404,9 @@ class Header {
      * then replace it to a new block
      */
     if (data.level !== undefined && this._element.parentNode) {
-			if (this._element) {
-					this.destroyHeaderEventListeners();
-			}
+      if (this._element) {
+	this.destroyHeaderEventListeners();
+      }
 				
       /**
        * Create a new tag
@@ -433,12 +433,12 @@ class Header {
        */
       this._element = newHeader;
 
-			/**
-			 * If data.text was passed then update block's content
-			 */
-			if (data.text !== undefined) {
-				this._element.innerHTML = this._data.text || '';
-			}
+      /**
+       * If data.text was passed then update block's content
+       */
+      if (data.text !== undefined) {
+	this._element.innerHTML = this._data.text || '';
+      }
     }
   }
 
@@ -474,13 +474,13 @@ class Header {
      */
     tag.dataset.placeholder = this.api.i18n.t(this._settings.placeholder || '');
    
-		/**
-		 * Add event listeners to listen for changes to the header text if the user has enabled header text length validation.
-		 */
-		if (this._settings.checkHeaderLength) {
-			this.api.listeners.on(tag, 'input', (event) => {this.eventListerSanitazerForHeader(event, this)});
-			this.api.listeners.on(tag, 'paste', (event) => {this.eventListerSanitazerForHeader(event, this)});
-		}
+    /**
+     * Add event listeners to listen for changes to the header text if the user has enabled header text length validation.
+     */
+    if (this._settings.checkHeaderLength) {
+      this.api.listeners.on(tag, 'input', (event) => {this.eventListerSanitazerForHeader(event, this)});
+      this.api.listeners.on(tag, 'paste', (event) => {this.eventListerSanitazerForHeader(event, this)});
+    }
 
     /**
      * Add anchor to if available
@@ -489,11 +489,11 @@ class Header {
       tag.dataset.anchor = this.anchor;
     }
 			
-		/**
-		 * Hide pseudo-element ::after to not show an empty anchor's value near with
-		 * the header block.
-		 */
-		if ('anchor' in this._data && this._data.anchor.length === 0) {
+    /**
+     * Hide pseudo-element ::after to not show an empty anchor's value near with
+     * the header block.
+     */
+    if ('anchor' in this._data && this._data.anchor.length === 0) {
       tag.classList.add(this._CSS.blockAfterHide);
     }
 			
@@ -509,46 +509,46 @@ class Header {
   eventListerSanitazerForHeader(event, classThis) {
       let value = event.target.innerHTML;
           
-			if (value.length > classThis._settings.headerLength) {
-				event.target.innerHTML = classThis.normalizeHeader(value);
-				event.target.blur();					
-			}
+      if (value.length > classThis._settings.headerLength) {
+	event.target.innerHTML = classThis.normalizeHeader(value);
+	event.target.blur();					
+      }
   }
 
-	/**
-	 * Event lister to sanitize the anchor input based on the current setting.
-	 *
+  /**
+   * Event lister to sanitize the anchor input based on the current setting.
+   *
    * @param {object} event
    * @param {object} classThis
-	 */
+   */
   eventListerSanitazerForAnchor(event, classThis) {
-		// Allow only the following characters
-		let value = event.target.value.replace(/[^a-z0-9_-]/gi, ''),
-			valueLength = value.length;
+    // Allow only the following characters
+    let value = event.target.value.replace(/[^a-z0-9_-]/gi, ''),
+      valueLength = value.length;
+    
+    // limit the length of the anchor
+    if (valueLength > classThis._settings.anchorLength) {
+      value = value.slice(0, classThis._settings.anchorLength);
+    }
 
-		// limit the length of the anchor
-		if (valueLength > classThis._settings.anchorLength) {
-			value = value.slice(0, classThis._settings.anchorLength);
-		}
+    // put the received value after filters in the input field
+    event.target.value = value;
 
-		// put the received value after filters in the input field
-		event.target.value = value;
+    // put the value in the tag data
+    classThis._element.dataset.anchor = value;
 
-		// put the value in the tag data
-		classThis._element.dataset.anchor = value;
+    // save the value
+    classThis.data.anchor = value;
 
-		// save the value
-		classThis.data.anchor = value;
-
-		if (valueLength > 0) {
-			if (classThis._element.classList.contains(classThis._CSS.blockAfterHide)) {
-				classThis._element.classList.remove(classThis._CSS.blockAfterHide);
-			}
-		} else {
-			if (classThis._element.classList.contains(classThis._CSS.blockAfterHide) === false) {
-				classThis._element.classList.add(classThis._CSS.blockAfterHide);
-			}
-		}
+    if (valueLength > 0) {
+      if (classThis._element.classList.contains(classThis._CSS.blockAfterHide)) {
+	classThis._element.classList.remove(classThis._CSS.blockAfterHide);
+      }
+    } else {
+      if (classThis._element.classList.contains(classThis._CSS.blockAfterHide) === false) {
+	classThis._element.classList.add(classThis._CSS.blockAfterHide);
+      }
+    }
   }
 
   /**
@@ -734,15 +734,16 @@ class Header {
     };
   }
 	
-	/**
-	 * Disable the event listeners which was enabled to listen changing of the main tag with header text
-	 */
-	destroyHeaderEventListeners() {
-		if (this._settings.checkHeaderLength) {
-			this.api.listeners.off(this._element, 'input', (event) => {this.eventListerSanitazerForHeader(event, this)}, false);
-			this.api.listeners.off(this._element, 'paste', (event) => {this.eventListerSanitazerForHeader(event, this)}, false);
-		}
-	}
-}
 
+  /**
+   * Disable the event listeners which was enabled to listen changing of the main tag with header text
+   */
+  destroyHeaderEventListeners() {
+    if (this._settings.checkHeaderLength) {
+      this.api.listeners.off(this._element, 'input', (event) => {this.eventListerSanitazerForHeader(event, this)}, false);
+      this.api.listeners.off(this._element, 'paste', (event) => {this.eventListerSanitazerForHeader(event, this)}, false);
+    }
+  }
+} 
+ 
 module.exports = Header;
