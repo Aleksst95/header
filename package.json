@@ -1,6 +1,6 @@
 {
   "name": "editorjs-header-with-anchor",
-  "version": "2.5.0",
+  "version": "2.6.0",
   "keywords": [
     "codex editor",
     "header",
@@ -10,7 +10,7 @@
   ],
   "description": "Header Tool with anchor for Editor.js",
   "license": "MIT",
-  "repository": "https://github.com/Aleksst95/header",
+  "repository": "https://github.com/Aleksst95/header-with-anchor",
   "main": "./dist/bundle.js",
   "scripts": {
     "build": "webpack --mode production",

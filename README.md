@@ -45,7 +45,7 @@ var editor = EditorJS({
   ...
 });
 ```
-Available symbols: all Latin letters, digitals, dash, and underscore.
+Available characters: all Latin letters, digitals, dash, and underscore.
 
 If you want to set the maximum length of the header text, you need to set the `checkHeaderLength` parameter to `TRUE` in the config.
 

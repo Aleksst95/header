@@ -36,9 +36,11 @@ class Header {
    *   data — previously saved data
    *   config - user config for Tool
    *   api - Editor.js API
+   *   readOnly - read only mode flag
    */
-  constructor({data, config, api}) {
+  constructor({ data, config, api, readOnly }) {
     this.api = api;
+    this.readOnly = readOnly;
 
     /**
      * Styles
@@ -110,6 +112,7 @@ class Header {
    * Normalize input data
    *
    * @param {HeaderData} data - saved data to process
+   *
    * @returns {HeaderData}
    * @private
    */
@@ -334,6 +337,15 @@ class Header {
       anchor: false,
     };
   }
+	
+	/**
+   * Returns true to notify core that read-only is supported
+   *
+   * @returns {boolean}
+   */
+  static get isReadOnlySupported() {
+		return true;
+	}
 
   /**
    * Get default status for enabling anchor
@@ -467,7 +479,7 @@ class Header {
     /**
      * Make tag editable
      */
-    tag.contentEditable = 'true';
+    tag.contentEditable = this.readOnly ? 'false' : 'true';
 
     /**
      * Add Placeholder
@@ -496,7 +508,7 @@ class Header {
     if ('anchor' in this._data && this._data.anchor.length === 0) {
       tag.classList.add(this._CSS.blockAfterHide);
     }
-			
+		
     return tag;
   }
 
